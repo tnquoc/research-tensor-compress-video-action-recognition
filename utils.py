@@ -1,6 +1,7 @@
 import os
 
 import numpy as np
+import pandas as pd
 import torch
 import torchvision
 from torch.utils.data import Dataset, DataLoader
@@ -25,7 +26,7 @@ class UCF101Dataset(Dataset):
         return self.length
 
     def __getitem__(self, idx):
-        vid_path, label = self.dataset[idx]
+        vid_path, label = self.dataset['Path'][idx], self.dataset['LabelInd'][idx]
         vid_path = os.path.join(self.base_data_path, vid_path)
         # vid_path = self.base_data_path + '/' + vid_path
         # vid, _, _ = torchvision.io.read_video(vid_path)
@@ -35,7 +36,7 @@ class UCF101Dataset(Dataset):
 
         sample = {
             'video': vid.type(torch.FloatTensor) / 255,
-            'label': int(label),
+            'label': int(label) - 1,
             'path': vid_path
         }
 
@@ -89,17 +90,39 @@ def collate_fn2(data, tucker_ranks):
         list_factor_matrix_4 = list_factor_matrix_4.unsqueeze(0)
 
     return list_cores, list_factor_matrix_1, list_factor_matrix_2, list_factor_matrix_3, list_factor_matrix_4, \
-           torch.from_numpy(np.array(labels))
+           torch.from_numpy(np.array(labels)).long()
 
 
 def get_loaders(params):
-    train_dataset = read_ucf101_dataset_annotation(params['train_set'])[:32]
-    train_ucf_dataset = UCF101Dataset(length=len(train_dataset), dataset=train_dataset,
-                                      base_data_path=params['data_dir'])
-    data_loader = DataLoader(dataset=train_ucf_dataset,
+    train_df = pd.read_csv(params['train_set'])[:32]
+    train_df = train_df.sample(frac=1).reset_index(drop=True)
+    val_df = pd.read_csv(params['val_set'])[:16]
+    val_df = val_df.sample(frac=1).reset_index(drop=True)
+    test_df = pd.read_csv(params['test_set'])[:16]
+
+    train_ucf_dataset = UCF101Dataset(length=len(train_df), dataset=train_df, base_data_path=params['data_dir'])
+    val_ucf_dataset = UCF101Dataset(length=len(val_df), dataset=val_df, base_data_path=params['data_dir'])
+    test_ucf_dataset = UCF101Dataset(length=len(test_df), dataset=test_df, base_data_path=params['data_dir'])
+
+    train_loader = DataLoader(dataset=train_ucf_dataset,
+                              batch_size=params['batch_size'],
+                              num_workers=2,
+                              collate_fn=partial(collate_fn2, tucker_ranks=params['tucker_ranks']),
+                              # collate_fn=collate_fn1,
+                              shuffle=True)
+
+    val_loader = DataLoader(dataset=val_ucf_dataset,
+                            batch_size=params['batch_size'],
+                            num_workers=2,
+                            collate_fn=partial(collate_fn2, tucker_ranks=params['tucker_ranks']),
+                            # collate_fn=collate_fn1,
+                            shuffle=True)
+
+    test_loader = DataLoader(dataset=test_ucf_dataset,
                              batch_size=params['batch_size'],
                              num_workers=2,
                              collate_fn=partial(collate_fn2, tucker_ranks=params['tucker_ranks']),
+                             # collate_fn=collate_fn1,
                              shuffle=True)
 
-    return data_loader
+    return train_loader, val_loader, test_loader

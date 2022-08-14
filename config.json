@@ -1,8 +1,10 @@
 {
     "data_dir": "D:/personal/python_projects/data/UCF-101-dataset/UCF-101",
-    "train_set": "D:/personal/python_projects/data/UCF-101-dataset/UCF101_Action_detection_splits/trainlist01.txt",
-    "tucker_ranks": [10, 15, 20, 3],
-    "epochs": 10,
-    "batch_size": 16,
+    "train_set": "train_set.csv",
+    "val_set": "val_set.csv",
+    "test_set": "test_set.csv",
+    "tucker_ranks": [16, 12, 16, 3],
+    "epochs": 3,
+    "batch_size": 8,
     "lr": 0.0001
 }
