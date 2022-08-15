@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import pandas as pd
 import tensorly as tl
 from tensorly.decomposition import tucker, matrix_product_state
 
@@ -95,12 +96,16 @@ def read_ucf101_dataset_annotation(annotation_file):
         lines = f.readlines()
     f.close()
 
-    dataset = []
+    dataset = {
+        'Path': [],
+        'LabelInd': []
+    }
     for line in lines:
         vid_path, label = line.split()
-        dataset.append((vid_path, label))
+        dataset['Path'].append(vid_path)
+        dataset['LabelInd'].append(label)
 
-    return dataset
+    return pd.DataFrame(dataset)
 
 
 def normalize_video_by_frames(vid, med):

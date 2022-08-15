@@ -150,9 +150,13 @@ class CompressByTuckerVideoRecognizer(nn.Module):
         self.factor_matrix_4_fc_2 = nn.Linear(100, 60)
         self.factor_matrix_4_fc_3 = nn.Linear(60, n_classes)
 
+        self.relu = nn.ReLU()
+
     def forward_core_tensor(self, x):
         x = self.core_tensor_fc_1(x)
+        x = self.relu(x)
         x = self.core_tensor_fc_2(x)
+        x = self.relu(x)
         x = self.core_tensor_fc_3(x)
         x = nn.functional.softmax(x, dim=0)
 
@@ -160,7 +164,9 @@ class CompressByTuckerVideoRecognizer(nn.Module):
 
     def forward_factor_matrix_1(self, x):
         x = self.factor_matrix_1_fc_1(x)
+        x = self.relu(x)
         x = self.factor_matrix_1_fc_2(x)
+        x = self.relu(x)
         x = self.factor_matrix_1_fc_3(x)
         x = nn.functional.softmax(x, dim=0)
 
@@ -168,16 +174,19 @@ class CompressByTuckerVideoRecognizer(nn.Module):
 
     def forward_factor_matrix_2(self, x):
         x = self.factor_matrix_2_fc_1(x)
+        x = self.relu(x)
         x = self.factor_matrix_2_fc_2(x)
+        x = self.relu(x)
         x = self.factor_matrix_2_fc_3(x)
         x = nn.functional.softmax(x, dim=0)
 
         return x
 
     def forward_factor_matrix_3(self, x):
-        # x = tl.tensor_to_vec(x)
         x = self.factor_matrix_3_fc_1(x)
+        x = self.relu(x)
         x = self.factor_matrix_3_fc_2(x)
+        x = self.relu(x)
         x = self.factor_matrix_3_fc_3(x)
         x = nn.functional.softmax(x, dim=0)
 
@@ -185,7 +194,9 @@ class CompressByTuckerVideoRecognizer(nn.Module):
 
     def forward_factor_matrix_4(self, x):
         x = self.factor_matrix_4_fc_1(x)
+        x = self.relu(x)
         x = self.factor_matrix_4_fc_2(x)
+        x = self.relu(x)
         x = self.factor_matrix_4_fc_3(x)
         x = nn.functional.softmax(x, dim=0)
 

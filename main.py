@@ -1,5 +1,6 @@
 import os
 import time
+import warnings
 
 import torch
 import json
@@ -7,6 +8,8 @@ import numpy as np
 
 from utils import get_loaders
 from model import CompressByTuckerVideoRecognizer
+
+warnings.filterwarnings("ignore")
 
 
 def main(params):
@@ -26,6 +29,8 @@ def main(params):
     num_epochs = params['epochs']
     train_loss = []
     val_loss = []
+    print('Start training...')
+    print('Total steps', len(train_loader))
     for epoch in range(num_epochs):
         training_loss = 0
         model.train()
@@ -89,6 +94,8 @@ def main(params):
 
     torch.save(torch.from_numpy(np.array(train_loss)), 'train_loss.pt')
     torch.save(torch.from_numpy(np.array(val_loss)), 'val_loss.pt')
+
+    print('Done')
 
 
 if __name__ == '__main__':

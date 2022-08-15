@@ -94,7 +94,11 @@ def collate_fn2(data, tucker_ranks):
 
 
 def get_loaders(params):
-    train_df = pd.read_csv(params['train_set'])[:32]
+    if 'csv' in params['train_set']:
+        train_df = pd.read_csv(params['train_set'])
+    else:
+        train_df = read_ucf101_dataset_annotation(params['train_set'])
+
     train_df = train_df.sample(frac=1).reset_index(drop=True)
     val_df = pd.read_csv(params['val_set'])[:16]
     val_df = val_df.sample(frac=1).reset_index(drop=True)
@@ -115,14 +119,14 @@ def get_loaders(params):
                             batch_size=params['batch_size'],
                             num_workers=2,
                             collate_fn=partial(collate_fn2, tucker_ranks=params['tucker_ranks']),
-                            # collate_fn=collate_fn1,
-                            shuffle=True)
+                            # collate_fn=collate_fn1
+                            )
 
     test_loader = DataLoader(dataset=test_ucf_dataset,
                              batch_size=params['batch_size'],
                              num_workers=2,
                              collate_fn=partial(collate_fn2, tucker_ranks=params['tucker_ranks']),
                              # collate_fn=collate_fn1,
-                             shuffle=True)
+                             )
 
     return train_loader, val_loader, test_loader
