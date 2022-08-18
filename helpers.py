@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import tensorly as tl
 from tensorly.decomposition import tucker, matrix_product_state
+from prettytable import PrettyTable
 
 
 def display_video(vid):
@@ -150,3 +151,72 @@ def normalize_video_by_frames(vid, med):
                 vid = np.insert(vid, i + 1, gen_frame, axis=0)
 
     return vid
+
+
+def count_parameters(model):
+    table = PrettyTable(["Modules", "Parameters"])
+    total_params = 0
+    for name, parameter in model.named_parameters():
+        if not parameter.requires_grad: continue
+        params = parameter.numel()
+        table.add_row([name, params])
+        total_params += params
+    print(table)
+    print(f"Total Trainable Params: {total_params}")
+    return total_params
+
+
+label_to_ind = {
+    'Basketball': '1',
+    'BasketballDunk': '2',
+    'Biking': '3',
+    'CliffDiving': '4',
+    'CricketBowling': '5',
+    'Diving': '6',
+    'Fencing': '7',
+    'FloorGymnastics': '8',
+    'GolfSwing': '9',
+    'HorseRiding': '10',
+    'IceDancing': '11',
+    'LongJump': '12',
+    'PoleVault': '13',
+    'RopeClimbing': '14',
+    'SalsaSpin': '15',
+    'SkateBoarding': '16',
+    'Skiing': '17',
+    'Skijet': '18',
+    'SoccerJuggling': '19',
+    'Surfing': '20',
+    'TennisSwing': '21',
+    'TrampolineJumping': '22',
+    'VolleyballSpiking': '23',
+    'WalkingWithDog': '24'
+}
+
+
+ind_to_label = {
+    '1': 'Basketball',
+    '2': 'BasketballDunk',
+    '3': 'Biking',
+    '4': 'CliffDiving',
+    '5': 'CricketBowling',
+    '6': 'Diving',
+    '7': 'Fencing',
+    '8': 'FloorGymnastics',
+    '9': 'GolfSwing',
+    '10': 'HorseRiding',
+    '11': 'IceDancing',
+    '12': 'LongJump',
+    '13': 'PoleVault',
+    '14': 'RopeClimbing',
+    '15': 'SalsaSpin',
+    '16': 'SkateBoarding',
+    '17': 'Skiing',
+    '18': 'Skijet',
+    '19': 'SoccerJuggling',
+    '20': 'Surfing',
+    '21': 'TennisSwing',
+    '22': 'TrampolineJumping',
+    '23': 'VolleyballSpiking',
+    '24': 'WalkingWithDog'
+}
