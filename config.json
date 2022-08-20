@@ -1,10 +1,11 @@
 {
     "data_dir": "D:/personal/python_projects/data/UCF-101-dataset/UCF-101",
-    "train_set": "train_set.csv",
+    "train_set": "D:/personal/python_projects/data/UCF-101-dataset/UCF101_Action_detection_splits/trainlist01.txt",
     "val_set": "val_set.csv",
     "test_set": "test_set.csv",
     "tucker_ranks": [16, 12, 16, 3],
     "epochs": 3,
     "batch_size": 8,
-    "lr": 0.0001
+    "lr": 0.0001,
+    "pre_trained": "training/checkpoint_epoch9.pth"
 }

@@ -25,6 +25,10 @@ def main(params):
     count_parameters(model)
     criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=params['lr'])
+    if params['pre_trained']:
+        checkpoint = torch.load(params['pre_trained'], map_location=device)
+        model.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
     num_epochs = params['epochs']
     train_loss = []
