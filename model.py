@@ -51,7 +51,6 @@ class CompressByTuckerVideoRecognizer(nn.Module):
         x = self.core_tensor_bn_2(x)
         x = self.relu(x)
         x = self.core_tensor_fc_3(x)
-        x = nn.functional.softmax(x, dim=1)
 
         return x
 
@@ -63,7 +62,6 @@ class CompressByTuckerVideoRecognizer(nn.Module):
         x = self.factor_matrix_1_bn_2(x)
         x = self.relu(x)
         x = self.factor_matrix_1_fc_3(x)
-        x = nn.functional.softmax(x, dim=1)
 
         return x
 
@@ -75,7 +73,6 @@ class CompressByTuckerVideoRecognizer(nn.Module):
         x = self.factor_matrix_2_bn_2(x)
         x = self.relu(x)
         x = self.factor_matrix_2_fc_3(x)
-        x = nn.functional.softmax(x, dim=1)
 
         return x
 
@@ -87,7 +84,6 @@ class CompressByTuckerVideoRecognizer(nn.Module):
         x = self.factor_matrix_3_bn_2(x)
         x = self.relu(x)
         x = self.factor_matrix_3_fc_3(x)
-        x = nn.functional.softmax(x, dim=1)
 
         return x
 
@@ -99,7 +95,6 @@ class CompressByTuckerVideoRecognizer(nn.Module):
         x = self.factor_matrix_4_bn_2(x)
         x = self.relu(x)
         x = self.factor_matrix_4_fc_3(x)
-        x = nn.functional.softmax(x, dim=1)
 
         return x
 

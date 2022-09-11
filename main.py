@@ -16,7 +16,8 @@ warnings.filterwarnings("ignore")
 def main(params):
     train_loader, val_loader, test_loader = get_loaders(params)
 
-    input_shape = (164, 240, 320, 3)
+    # input_shape = (164, 240, 320, 3)
+    input_shape = (164, 120, 160, 3)
     tucker_ranks = params['tucker_ranks']
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print('Device:', device)

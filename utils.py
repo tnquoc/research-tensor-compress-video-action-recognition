@@ -1,4 +1,5 @@
 import os
+import time
 
 import numpy as np
 import pandas as pd
@@ -7,20 +8,22 @@ import torchvision
 from torch.utils.data import Dataset, DataLoader
 from operator import itemgetter
 import tensorly as tl
-from tensorly.decomposition import tucker
+from tensorly.decomposition import tucker, non_negative_tucker, non_negative_tucker_hals
 from functools import partial
 
+from torchvideotransforms import video_transforms, volume_transforms
 from helpers import read_video, normalize_video_by_frames, read_ucf101_dataset_annotation
 
 tl.set_backend('pytorch')
 
 
 class UCF101Dataset(Dataset):
-    def __init__(self, length, dataset, base_data_path):
+    def __init__(self, length, dataset, base_data_path, transform=None):
         self.length = length
         self.dataset = dataset
         self.base_data_path = base_data_path
         self.rmv_list = []
+        self.transform = transform
 
     def __len__(self):
         return self.length
@@ -28,7 +31,10 @@ class UCF101Dataset(Dataset):
     def __getitem__(self, idx):
         vid_path, label = self.dataset['Path'][idx], self.dataset['LabelInd'][idx]
         vid_path = os.path.join(self.base_data_path, vid_path)
-        vid = read_video(vid_path)
+        vid = read_video(vid_path, resize=(160, 120))
+        if 'IsAugment' in self.dataset and self.dataset['IsAugment'][idx]:
+            vid = self.transform(vid)
+            vid = np.array(vid)
         vid = torch.from_numpy(vid)
 
         sample = {
@@ -91,6 +97,12 @@ def collate_fn2(data, tucker_ranks):
 
 
 def get_loaders(params):
+    video_transform_list = [
+        video_transforms.RandomRotation(5),
+        video_transforms.RandomHorizontalFlip(),
+    ]
+    transforms = video_transforms.Compose(video_transform_list)
+
     if '.csv' in params['train_set']:
         train_df = pd.read_csv(params['train_set'])
     else:
@@ -98,10 +110,10 @@ def get_loaders(params):
 
     train_df = train_df.sample(frac=1).reset_index(drop=True)
     val_df = pd.read_csv(params['val_set'])
-    val_df = val_df.sample(frac=1).reset_index(drop=True)
     test_df = pd.read_csv(params['test_set'])
 
-    train_ucf_dataset = UCF101Dataset(length=len(train_df), dataset=train_df, base_data_path=params['data_dir'])
+    train_ucf_dataset = UCF101Dataset(length=len(train_df), dataset=train_df, base_data_path=params['data_dir'],
+                                      transform=transforms)
     val_ucf_dataset = UCF101Dataset(length=len(val_df), dataset=val_df, base_data_path=params['data_dir'])
     test_ucf_dataset = UCF101Dataset(length=len(test_df), dataset=test_df, base_data_path=params['data_dir'])
 
