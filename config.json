@@ -1,6 +1,6 @@
 {
     "data_dir": "D:/python_projects/data/UCF-101-dataset/UCF-101",
-    "train_set": "generated_files/augmented_train_set_1.csv",
+    "train_set": "generated_files/augmented_train_set.csv",
     "val_set": "generated_files/val_set.csv",
     "test_set": "generated_files/test_set.csv",
     "tucker_ranks": [16, 12, 16, 3],

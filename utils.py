@@ -61,7 +61,7 @@ def collate_fn1(data):
     return videos, torch.from_numpy(np.array(labels))
 
 
-def collate_fn2(data, tucker_ranks):
+def collate_fn2(data, tucker_ranks, device):
     labels = []
     list_core = []
     list_factor_matrix_1 = []
@@ -72,13 +72,26 @@ def collate_fn2(data, tucker_ranks):
     for i in range(len(data)):
         vid, label = data[i]['video'], data[i]['label']
         labels.append(label)
-        vid = normalize_video_by_frames(vid, 164)
-        core, factors = tucker(vid, rank=tucker_ranks, init='random', tol=10e-5, random_state=12345)
-        list_core.append(tl.tensor_to_vec(core))
-        list_factor_matrix_1.append(tl.tensor_to_vec(factors[0]))
-        list_factor_matrix_2.append(tl.tensor_to_vec(factors[1]))
-        list_factor_matrix_3.append(tl.tensor_to_vec(factors[2]))
-        list_factor_matrix_4.append(tl.tensor_to_vec(factors[3]))
+        if device != 'cpu':
+            # print(torch.cuda.get_device_name(device))
+            vid = normalize_video_by_frames(vid, 164).to(device)
+            core, factors = tucker(vid, rank=tucker_ranks, init='random', tol=10e-5, random_state=12345)
+            list_core.append(tl.tensor_to_vec(core.cpu()))
+            list_factor_matrix_1.append(tl.tensor_to_vec(factors[0].cpu()))
+            list_factor_matrix_2.append(tl.tensor_to_vec(factors[1].cpu()))
+            list_factor_matrix_3.append(tl.tensor_to_vec(factors[2].cpu()))
+            list_factor_matrix_4.append(tl.tensor_to_vec(factors[3].cpu()))
+            del vid
+            del core
+            del factors
+        else:
+            vid = normalize_video_by_frames(vid, 164)
+            core, factors = tucker(vid, rank=tucker_ranks, init='random', tol=10e-5, random_state=12345)
+            list_core.append(tl.tensor_to_vec(core))
+            list_factor_matrix_1.append(tl.tensor_to_vec(factors[0]))
+            list_factor_matrix_2.append(tl.tensor_to_vec(factors[1]))
+            list_factor_matrix_3.append(tl.tensor_to_vec(factors[2]))
+            list_factor_matrix_4.append(tl.tensor_to_vec(factors[3]))
 
     list_cores = torch.stack(list_core, 0)
     list_factor_matrix_1 = torch.stack(list_factor_matrix_1, 0)
@@ -96,7 +109,7 @@ def collate_fn2(data, tucker_ranks):
            torch.from_numpy(np.array(labels)).long()
 
 
-def get_loaders(params):
+def get_loaders(params, device='cpu'):
     video_transform_list = [
         video_transforms.RandomRotation(5),
         video_transforms.RandomHorizontalFlip(),
@@ -119,18 +132,18 @@ def get_loaders(params):
 
     train_loader = DataLoader(dataset=train_ucf_dataset,
                               batch_size=params['batch_size'],
-                              num_workers=2,
-                              collate_fn=partial(collate_fn2, tucker_ranks=params['tucker_ranks']),
+                              num_workers=0,
+                              collate_fn=partial(collate_fn2, tucker_ranks=params['tucker_ranks'], device=device),
                               shuffle=True)
 
     val_loader = DataLoader(dataset=val_ucf_dataset,
                             batch_size=params['batch_size'],
-                            num_workers=2,
-                            collate_fn=partial(collate_fn2, tucker_ranks=params['tucker_ranks']))
+                            num_workers=0,
+                            collate_fn=partial(collate_fn2, tucker_ranks=params['tucker_ranks'], device=device))
 
     test_loader = DataLoader(dataset=test_ucf_dataset,
                              batch_size=params['batch_size'],
-                             num_workers=2,
-                             collate_fn=partial(collate_fn2, tucker_ranks=params['tucker_ranks']))
+                             num_workers=0,
+                             collate_fn=partial(collate_fn2, tucker_ranks=params['tucker_ranks'], device=device))
 
     return train_loader, val_loader, test_loader

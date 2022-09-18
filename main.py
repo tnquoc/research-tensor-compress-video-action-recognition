@@ -13,14 +13,12 @@ from model import CompressByTuckerVideoRecognizer
 warnings.filterwarnings("ignore")
 
 
-def main(params):
-    train_loader, val_loader, test_loader = get_loaders(params)
+def main(params, device):
+    train_loader, val_loader, test_loader = get_loaders(params, device)
 
     # input_shape = (164, 240, 320, 3)
     input_shape = (164, 120, 160, 3)
     tucker_ranks = params['tucker_ranks']
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print('Device:', device)
 
     model = CompressByTuckerVideoRecognizer(input_shape=input_shape, tucker_ranks=tucker_ranks, n_classes=24).to(device)
     count_parameters(model)
@@ -110,7 +108,12 @@ def main(params):
 
 
 if __name__ == '__main__':
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    print('Device:', torch.cuda.get_device_name(device) if device != 'cpu' else 'cpu')
+    if device != 'cpu':
+        torch.multiprocessing.set_start_method('spawn')
+
     params = json.load(open('config.json', 'r'))
 
-    main(params)
+    main(params, device)
 
