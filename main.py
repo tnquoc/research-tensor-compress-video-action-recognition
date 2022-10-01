@@ -43,7 +43,7 @@ def main(params, device):
         model.train()
         for i, samples in enumerate(train_loader):
             # Get data
-            cores, factor_matrices_1, factor_matrices_2, factor_matrices_3, factor_matrices_4, labels = samples
+            cores, factor_matrices_1, factor_matrices_2, factor_matrices_3, factor_matrices_4, hankel_matrices, labels = samples
 
             # clear gradient
             optimizer.zero_grad()
@@ -53,7 +53,8 @@ def main(params, device):
                              factor_matrices_1.to(device),
                              factor_matrices_2.to(device),
                              factor_matrices_3.to(device),
-                             factor_matrices_4.to(device)))
+                             factor_matrices_4.to(device),
+                             hankel_matrices.to(device)))
 
             # calculate loss
             loss = criterion(outputs.to(device), labels.to(device))
@@ -64,7 +65,7 @@ def main(params, device):
 
             training_loss += loss.item()
 
-            if (i + 1) % 10 == 0:
+            if (i + 1) % 50 == 0:
                 print('[Training] Step [{}/{}], Loss: {:.4f}'.format(i + 1, len(train_loader), loss.item()))
 
         validation_loss = 0
@@ -72,21 +73,22 @@ def main(params, device):
         with torch.no_grad():
             for i, samples in enumerate(val_loader):
                 # Get data
-                cores, factor_matrices_1, factor_matrices_2, factor_matrices_3, factor_matrices_4, labels = samples
+                cores, factor_matrices_1, factor_matrices_2, factor_matrices_3, factor_matrices_4, hankel_matrices, labels = samples
 
                 # Forward pass
                 outputs = model((cores.to(device),
-                                factor_matrices_1.to(device),
-                                factor_matrices_2.to(device),
-                                factor_matrices_3.to(device),
-                                factor_matrices_4.to(device)))
+                                 factor_matrices_1.to(device),
+                                 factor_matrices_2.to(device),
+                                 factor_matrices_3.to(device),
+                                 factor_matrices_4.to(device),
+                                 hankel_matrices.to(device)))
 
                 # calculate loss
                 loss = criterion(outputs.to(device), labels.to(device))
 
                 validation_loss += loss.item()
 
-                if (i + 1) % 10 == 0:
+                if (i + 1) % 5 == 0:
                     print('[Validation] Step [{}/{}], ValLoss: {:.4f}'.format(i + 1, len(val_loader), loss.item()))
 
         training_loss = training_loss / len(train_loader)
@@ -99,7 +101,7 @@ def main(params, device):
         torch.save({
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict()
-        }, os.path.join(os.getcwd(), f'training/checkpoint_epoch{epoch}.pth'))
+        }, os.path.join(os.getcwd(), f'training/checkpoint_epoch{epoch + 1}.pth'))
 
     torch.save(torch.from_numpy(np.array(train_loss)), os.path.join(os.getcwd(), 'training/history/train_loss.pt'))
     torch.save(torch.from_numpy(np.array(val_loss)), os.path.join(os.getcwd(), 'training/history/val_loss.pt'))
@@ -116,4 +118,3 @@ if __name__ == '__main__':
     params = json.load(open('config.json', 'r'))
 
     main(params, device)
-

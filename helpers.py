@@ -166,6 +166,17 @@ def count_parameters(model):
     return total_params
 
 
+def get_hankel_matrix(base_matrix, hankel_indices):
+    hankel_matrix = []
+    for j in range(len(hankel_indices)):
+        t = base_matrix[:, hankel_indices[j]]
+        hankel_matrix.append(t)
+    hankel_matrix = np.vstack(hankel_matrix)
+    hankel_matrix = hankel_matrix.dot(hankel_matrix.T)
+
+    return hankel_matrix
+
+
 label_to_ind = {
     'Basketball': '1',
     'BasketballDunk': '2',
